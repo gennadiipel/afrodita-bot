@@ -1,7 +1,7 @@
 const Stage = require('./Stage');
 const { Scenes, Markup } = require('telegraf')
 const needle = require('needle');
-const { BOT_CONFIG } = require('../../config');
+const { BOT_CONFIG, MYSQL_CONNECTION } = require('../../config');
 const fs = require('fs');
 
 
@@ -69,10 +69,9 @@ class RegistrationStage extends Stage {
                 }
     
                 ctx.session.user.gender = ctx.message.text
-                // return ctx.scene.leave()
                 return ctx.scene.enter('photoScene')
             },
-            (ctx) => ctx.reply('Отлично, перейдем к следующему шагу...')
+            (ctx) => ctx.reply('Отлично, перейдем к последнему шагу...')
         )
     }
 
@@ -114,7 +113,7 @@ class RegistrationStage extends Stage {
                     fs.createWriteStream(localFilePath)                    
                 )
                 .on('finish', () => {
-                    console.log('ready!!')
+                    
                 })
             }
         });
