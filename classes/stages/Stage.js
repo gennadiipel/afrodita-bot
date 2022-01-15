@@ -20,6 +20,7 @@ class Stage {
         onAction,
         on,
         onLeave,
+        runCode = null
     ) {
 
         const scene = new Scenes.BaseScene(name)
@@ -27,6 +28,11 @@ class Stage {
         scene.enter((ctx) => onEnter(ctx))
         scene.on(onAction, (ctx) => on(ctx))
         scene.leave((ctx) => onLeave(ctx))
+
+
+        if (runCode !== null) {
+            runCode(scene)
+        }
 
         return scene
     }

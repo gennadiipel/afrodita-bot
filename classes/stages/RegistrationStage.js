@@ -1,5 +1,10 @@
 const Stage = require('./Stage');
 const { Scenes, Markup } = require('telegraf')
+const needle = require('needle');
+const { BOT_CONFIG } = require('../../config');
+const fs = require('fs');
+
+
 
 class RegistrationStage extends Stage {
     constructor(bot) {
@@ -9,7 +14,7 @@ class RegistrationStage extends Stage {
 
 
     init() {
-        return new Scenes.Stage([this.nameScene(), this.ageScene(), this.genderScene()])
+        return new Scenes.Stage([this.nameScene(), this.ageScene(), this.genderScene(), this.photoScene()])
     }
 
 
@@ -22,7 +27,7 @@ class RegistrationStage extends Stage {
                 ctx.session.user = {
                     name: ctx.message.text
                 }
-                return ctx.scene.enter('ageScene')
+                return ctx.scene.enter('photoScene')
             },
             (ctx) => ctx.reply('Приятно познакомиться, ' + ctx.session.user.name)
         )
@@ -64,11 +69,55 @@ class RegistrationStage extends Stage {
                 }
     
                 ctx.session.user.gender = ctx.message.text
-                return ctx.scene.leave()
-                // return ctx.scene.enter(photoScene)
+                // return ctx.scene.leave()
+                return ctx.scene.enter('photoScene')
             },
             (ctx) => ctx.reply('Отлично, перейдем к следующему шагу...')
         )
+    }
+
+
+    photoScene() {
+        return this.scene(
+            'photoScene',
+            (ctx) => {
+                ctx.reply('Теперь необходимо выбрать фотографию, которую\
+                 будут оценивать другие пользователи.')
+                ctx.reply('Ее позже можно будет изменить.')
+                return ctx.reply('Пожалуйста, пришлите Вашу фотографию.')
+            },
+            'text',
+            (ctx) => ctx.reply('Пожалуйста, пришлите Вашу фотографию.'),
+            (ctx) => ctx.reply('OK.'),
+            (scene) => {
+                scene.on('photo', (ctx) => {
+                    this.downloadPhoto(ctx.message.from.id, ctx.message.photo[ctx.message.photo.length - 1].file_id)
+                })
+            }
+        )
+    }
+
+    downloadPhoto(userId, fileId) {
+        needle.get(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/getFile?file_id=${fileId}`, function(error, response) {
+            if (!error && response.statusCode == 200) {
+                const filePath = response.body.result.file_path
+
+                var path = require('path')
+                fs.mkdir(BOT_CONFIG.DIR + '/photos/userpics/' + userId, {recursive: true}, (error) => {
+                    if (error) throw error
+                })
+                const localFilePath = BOT_CONFIG.DIR + '/photos/userpics/' + userId + '/' + fileId + '.jpg';
+
+  
+                needle.get(`https://api.telegram.org/file/bot${BOT_CONFIG.TOKEN}/${filePath}`)
+                .pipe(
+                    fs.createWriteStream(localFilePath)                    
+                )
+                .on('finish', () => {
+                    console.log('ready!!')
+                })
+            }
+        });
     }
 }
 

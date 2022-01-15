@@ -21,7 +21,7 @@ class AfroditaBot {
 
     start(ctx) {
         if (!AfroditaUser.isUserExist()) {
-            ctx.scene.enter('nameScene')
+            ctx.scene.enter('photoScene')
         }
     }
 
