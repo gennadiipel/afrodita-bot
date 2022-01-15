@@ -20,9 +20,14 @@ class AfroditaBot {
     }
 
     start(ctx) {
-        if (!AfroditaUser.isUserExist()) {
-            ctx.scene.enter('photoScene')
-        }
+
+        AfroditaUser.isUserExist(ctx.message.from.id).then(isUserExist => {
+            if (!isUserExist) {
+                ctx.scene.enter('nameScene')
+            } else {
+                ctx.reply('вы уже зарегистрированы')
+            }
+        })
     }
 
 
@@ -34,4 +39,3 @@ class AfroditaBot {
 
 
 module.exports = AfroditaBot
-// module.exports = Scenes

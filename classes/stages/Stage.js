@@ -30,6 +30,7 @@ class Stage {
         scene.leave((ctx) => onLeave(ctx))
 
 
+
         if (runCode !== null) {
             runCode(scene)
         }
